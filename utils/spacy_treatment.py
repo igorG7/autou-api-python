@@ -1,8 +1,6 @@
 import spacy
-from spacy.lang.pt.stop_words import STOP_WORDS
 
 nlp = spacy.load("pt_core_news_sm")
-keywords = {"sistema", "suporte"}
 
 def spacyTreatment(text):
 
