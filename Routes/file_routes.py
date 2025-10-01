@@ -2,8 +2,8 @@ from fastapi import APIRouter, UploadFile, File, Form
 from PyPDF2 import PdfReader
 from typing import Optional
 import io
-from utils.separate_text import separateText
-from utils.spacy_treatment import spacyTreatment
+
+from utils.send_content_agent import send_content_agent
 
 file_router = APIRouter(prefix="/file", tags=["file"])
 
@@ -18,10 +18,9 @@ async def postFile(
 
     if sender and subject and description:
         text_form = f"Remetente: {sender} \n Assunto: {subject} \n Conteúdo: {description}"
-        email_structure = separateText(text_form)
-        teste = spacyTreatment(email_structure["conteúdo"])
-        print(teste)
-        return { "source": "form", "text": email_structure }
+        response = await send_content_agent(text_form)
+        print(response)
+        return { "source": "form", "text": text_form }
  
     contents = await file.read()
 
@@ -32,17 +31,17 @@ async def postFile(
         page = reader.pages[0]
         text = page.extract_text()
 
-        email_structure = separateText(text)
-        treated_text = spacyTreatment(email_structure["conteúdo"])
-        print(treated_text)
+        response = await send_content_agent(text)
+        print(response)
 
-        return { "source": "pdf", "filename": file.filename, "text": email_structure }
+        return { "source": "pdf", "filename": file.filename, "text": text }
     
     if file.content_type == "text/plain":
         text = contents.decode("utf-8")
-        email_structure = separateText(text)
-        treated_text = spacyTreatment(email_structure["conteúdo"])
-        print(treated_text)
+        
+        response = await send_content_agent(text)
+        print(response)
+       
         return { "source": "txt", "filename": file.filename, "text": text }
         
 
